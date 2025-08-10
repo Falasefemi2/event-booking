@@ -45,7 +45,7 @@ The application follows a microservices architecture, with different services re
 ### Cloning
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Falasefemi2/event-booking.git
 ```
 
 ### Database Setup
