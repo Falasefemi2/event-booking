@@ -19,6 +19,11 @@ The application follows a microservices architecture, with different services re
     -   Uses Spring Boot, Spring Security with JWT for authentication and authorization.
     -   Connects to a MySQL database to store user data.
     -   Registers itself with the discovery service.
+-   **Event Service (`event-service`)**:
+    -   Manages event-related operations like creating, updating, and canceling events.
+    -   Uses Spring Boot.
+    -   Connects to a MySQL database to store event data.
+    -   Registers itself with the discovery service.
 
 ## Technologies Used
 
@@ -51,11 +56,12 @@ git clone https://github.com/Falasefemi2/event-booking.git
 ### Database Setup
 
 1.  Create a MySQL database named `event_usersdb`.
-2.  The service will create the tables automatically on startup.
+2.  Create a MySQL database named `event_db`.
+3.  The services will create the tables automatically on startup.
 
 ### Configuration
 
-The `user-service` uses a `.env` file for environment variables. Create a `.env` file in the root of the `user-service` directory with the following content:
+The `user-service` and `event-service` uses a `.env` file for environment variables. Create a `.env` file in the root of the `user-service` and `event-service` directory with the following content:
 
 ```
 DB_USERNAME=<your-mysql-username>
@@ -63,12 +69,13 @@ DB_PASSWORD=<your-mysql-password>
 JWT_SECRET=<your-jwt-secret>
 ```
 
-Alternatively, you can configure the database credentials directly in `user-service/src/main/resources/application.properties`.
+Alternatively, you can configure the database credentials directly in `user-service/src/main/resources/application.properties` and `event-service/src/main/resources/application.properties`.
 
 ### Running the application
 
 1.  **Start the `discovery-service`**: Navigate to the `discovery-service` directory and run `mvn spring-boot:run`. The Eureka server will be accessible at `http://localhost:8761`.
 2.  **Start the `user-service`**: Navigate to the `user-service` directory and run `mvn spring-boot:run`.
+3.  **Start the `event-service`**: Navigate to the `event-service` directory and run `mvn spring-boot:run`.
 
 ## API Endpoints (`user-service`)
 
@@ -108,9 +115,25 @@ All endpoints are prefixed with `/api`.
     -   **Request Body**: `UpdateRoleRequestDTO` (`role`)
     -   **Response**: `UserDTO`
 
+## API Endpoints (`event-service`)
+
+All endpoints are prefixed with `/api/events`.
+
+-   `POST /`: Create a new event.
+    -   **Request Body**: `CreateEventDto`
+    -   **Response**: `Event`
+-   `PUT /{eventId}`: Update an existing event.
+    -   **Request Body**: `CreateEventDto`
+    -   **Response**: `Event`
+-   `DELETE /{eventId}`: Cancel an event.
+    -   **Response**: `204 No Content`
+-   `GET /`: Get a list of all events.
+    -   **Response**: `List<Event>`
+-   `GET /{eventId}`: Get an event by its ID.
+    -   **Response**: `Event`
+
 ## Future Improvements
 
--   Implement an `event-service` to manage events.
 -   Implement a `booking-service` to handle event bookings.
 -   Add more comprehensive testing.
 -   Implement a gateway service (e.g., using Spring Cloud Gateway) to act as a single entry point for all services.
