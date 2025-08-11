@@ -15,12 +15,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -96,11 +98,37 @@ public class AuthService {
 
     public UserDTO getCurrentUser(Authentication authentication) {
         String email = authentication.getName();
+        log.info("Fetching user with email: {}", email);
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        return modelMapper.map(user, UserDTO.class);
+        UserDTO userDto = modelMapper.map(user, UserDTO.class);
+
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (roles.isEmpty()) {
+            log.warn("No roles found for user: {}", email);
+            userDto.setRole(Role.USER);
+        } else {
+            try {
+                String roleName = roles.get(0).replace("ROLE_", "");
+                userDto.setRole(Role.valueOf(roleName));
+                log.info("Assigned role {} to user {}", roleName, email);
+            } catch (IllegalArgumentException e) {
+                log.error("Invalid role name: {} for user: {}", roles.get(0), email);
+                userDto.setRole(Role.USER);
+            }
+        }
+        return userDto;
     }
+
+
+
+
 
     public UserDTO updateProfile(Authentication authentication, UpdateProfileRequestDTO request) {
         String email = authentication.getName();
